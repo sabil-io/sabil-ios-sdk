@@ -107,12 +107,16 @@ public final class Sabil {
     
     fileprivate func httpRequest(method: String, url urlString: String, body: [String: Any]?) {
         do {
-            
+            guard let clientID = clientID else {
+                print("[Sabil SDK]: clientID must not be nil.")
+                return
+            }
             guard let url = URL(string: urlString) else {return}
             var req = URLRequest(url: url)
             req.httpMethod = method
             req.addValue("application/json", forHTTPHeaderField: "Content-Type")
             req.addValue("application/json", forHTTPHeaderField: "Accept")
+            req.addValue("Basic \(clientID):\(secret ?? "")", forHTTPHeaderField: "Authorization")
             if let body = body {
                 req.httpBody = try JSONSerialization.data(withJSONObject: body, options: [])
             }
@@ -132,7 +136,7 @@ public final class Sabil {
     /**
      * Adds the device to the user's attached device list.
      *
-     * Call this fuction to attach this device to the user. **You must set the userID first.**
+     * Call this fuction to attach this device to the user. **You must set the userID & clientID first.**
      * If the userID is not set, nothing will happen.
      * Once the attaching is successfully concluded, if the user has  exceeded the limit of devices, the "onLimitExceeded" function will be called.
      * - You should call this function immeditely after you know the userID (i.e. after login, or after app launch).
@@ -146,7 +150,7 @@ public final class Sabil {
         }
         let deviceInfo = getDeviceInfo()
         httpRequest(method: "POST",
-                    url: "\(baseURL)/attach",
+                    url: "\(baseURL)/usage/attach",
                     body: [
                         "device_id": getDeviceID(),
                         "user": userID,
