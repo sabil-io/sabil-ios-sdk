@@ -2,13 +2,13 @@ import Foundation
 import UIKit
 
 public struct SabilAppearanceConfig {
-    let locale: String
+    public let locale: String
 }
 
 
 public struct SabilLimitConfig {
-    let mobileLimit: Int
-    let overallLimit: Int
+    public let mobileLimit: Int
+    public let overallLimit: Int
 }
 
 struct SabilOS: Codable {
