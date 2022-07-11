@@ -3,12 +3,20 @@ import UIKit
 
 public struct SabilAppearanceConfig {
     public let locale: String
+    
+    public init(locale: String) {
+        self.locale = locale
+    }
 }
-
 
 public struct SabilLimitConfig {
     public let mobileLimit: Int
     public let overallLimit: Int
+    
+    init(mobileLimit: Int, overallLimit: Int) {
+        self.mobileLimit = mobileLimit
+        self.overallLimit = overallLimit
+    }
 }
 
 struct SabilOS: Codable {
@@ -75,7 +83,7 @@ public final class Sabil {
      */
     public var onLogoutOtherDevice: (() -> Void)?
     
-    public func config(clientID: String, secret: String?, appearanceConfig: SabilAppearanceConfig, limitConfig: SabilLimitConfig) {
+    public func config(clientID: String, secret: String? = nil, appearanceConfig: SabilAppearanceConfig? = nil, limitConfig: SabilLimitConfig? = nil) {
         self.clientID = clientID
         self.secret = secret
         self.appearanceConfig = appearanceConfig
