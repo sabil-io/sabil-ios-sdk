@@ -134,9 +134,27 @@ public final class Sabil {
             print("[Sabil SDK]: userID must not be nil.")
             return
         }
+        let deviceInfo = getDeviceInfo()
         httpRequest(method: "POST",
                     url: "\(baseURL)/attach",
-                    body: ["device_id": getDeviceID(), "user": userID])
+                    body: [
+                        "device_id": getDeviceID(),
+                        "user": userID,
+                        "device_info": deviceInfo])
+    }
+    
+    fileprivate func getDeviceInfo() -> [String: Any] {
+        var type = "mobile"
+        if UIDevice.current.model.contains("iPad") {
+            type = "tablet"
+        }
+        return [
+            "os": ["name": UIDevice.current.systemName, "version": UIDevice.current.systemVersion],
+            "device": [
+                "vendor": "Apple",
+                "model": UIDevice.current.model,
+                "type": type]]
+        
     }
     
     /**
