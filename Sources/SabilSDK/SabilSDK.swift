@@ -44,11 +44,13 @@ public struct SabilDeviceUsage: Codable {
 }
 
 public final class Sabil {
-    public var clientID: String
+    public static let shared = Sabil()
+
+    public var clientID: String?
     public var secret: String?
     public var userID: String?
-    public var appearanceConfig: SabilAppearanceConfig
-    public var limitConfig: SabilLimitConfig
+    public var appearanceConfig: SabilAppearanceConfig?
+    public var limitConfig: SabilLimitConfig?
     private let baseURL = "http://localhost:8007"
     
     //TODO: Could be a protocol (?)
@@ -73,7 +75,7 @@ public final class Sabil {
      */
     public var onLogoutOtherDevice: (() -> Void)?
     
-    internal init(clientID: String, secret: String?, appearanceConfig: SabilAppearanceConfig, limitConfig: SabilLimitConfig) {
+    public func config(clientID: String, secret: String?, appearanceConfig: SabilAppearanceConfig, limitConfig: SabilLimitConfig) {
         self.clientID = clientID
         self.secret = secret
         self.appearanceConfig = appearanceConfig
