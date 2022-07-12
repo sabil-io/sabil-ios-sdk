@@ -27,31 +27,33 @@ public struct SabilLimitConfig {
     }
 }
 
-struct SabilOS: Codable {
-    let name: String?
-    let version: String?
+public struct SabilOS: Codable {
+    public let name: String?
+    public let version: String?
 }
 
-struct SabilDevice: Codable {
-    let vendor: String?
-    let type: String?
-    let model: String?
+public struct SabilDevice: Codable {
+    public let vendor: String?
+    public let type: String?
+    public let model: String?
 }
 
 public struct SabilDeviceInfo: Codable {
-    let os: SabilOS?
-    let device: SabilDevice?
+    public let os: SabilOS?
+    public let device: SabilDevice?
 }
 
-public struct SabilDeviceUsage: Codable {
-    let deviceID: String
-    let deviceInfo: String
-    let user: String
-    let detachedAt: Date
-    let createdAt: Date
-    let updatedAt: Date
+public struct SabilDeviceUsage: Codable, Identifiable {
+    public let id: String
+    public let deviceID: String
+    public let deviceInfo: SabilDeviceInfo
+    public let user: String
+    public let detachedAt: Date
+    public let createdAt: Date
+    public let updatedAt: Date
     
     enum CodingKeys: String, CodingKey {
+        case id = "_id"
         case deviceID = "device_id"
         case deviceInfo = "device_info"
         case user, createdAt, updatedAt
@@ -60,8 +62,8 @@ public struct SabilDeviceUsage: Codable {
 }
 
 public struct SabilAttachResponse: Decodable {
-    let attachedDevices: Int
-    let success: Bool
+    public let attachedDevices: Int
+    public let success: Bool
     
     enum CodingKeys: String, CodingKey {
         case attachedDevices = "attached_devices"

@@ -7,18 +7,25 @@
 
 import SwiftUI
 
-@available(iOS 13.0.0, *)
 struct DialogView: View {
+    @State var viewModel: DialogViewModel
     var body: some View {
-        Text("Hello, World!")
+        VStack {
+            if viewModel.loadingDevices {
+                ProgressView()
+            } else {
+                List(viewModel.attachedDevices) {
+                    Text($0.deviceInfo.os?.name ?? "Unknown")
+                }
+            }
+        }
     }
 }
 
 #if DEBUG
-@available(iOS 13.0.0, *)
 struct DialogView_Previews: PreviewProvider {
     static var previews: some View {
-        DialogView()
+        DialogView(viewModel: DialogViewModel())
     }
 }
 #endif

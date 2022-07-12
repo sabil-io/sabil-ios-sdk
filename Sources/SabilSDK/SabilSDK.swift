@@ -2,7 +2,6 @@ import Foundation
 import UIKit
 import SwiftUI
 
-@available(iOS 13.0.0, *)
 public final class Sabil {
     public static let shared = Sabil()
 
@@ -14,6 +13,7 @@ public final class Sabil {
     private let baseURL = "http://localhost:8007"
     private let window = UIWindow(frame: UIScreen.main.bounds)
     private let rootVC = UIViewController()
+    private let viewModel = DialogViewModel()
 
     //TODO: Could be a protocol (?)
     /// Called when the number of attached devices for  the user exceed the allotted limit.
@@ -63,13 +63,17 @@ public final class Sabil {
         return vendorID
     }
 
-    fileprivate func httpRequest(method: String, url urlString: String, body: [String: Any]?, onCompletion: ((Data?) -> Void)? = nil) {
+    fileprivate func httpRequest(method: String, url urlString: String, body: [String: Any]? = nil, onCompletion: ((Data?) -> Void)? = nil) {
         do {
             guard let clientID = clientID else {
                 print("[Sabil SDK]: clientID must not be nil.")
+                onCompletion?(nil)
                 return
             }
-            guard let url = URL(string: urlString) else {return}
+            guard let url = URL(string: urlString) else {
+                onCompletion?(nil)
+                return
+            }
             var req = URLRequest(url: url)
             req.httpMethod = method
             req.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -81,6 +85,7 @@ public final class Sabil {
             let task = URLSession.shared.dataTask(with: req) { data, response, error in
                 if let error = error {
                     print("[Sabil SDK]: \(error)")
+                    onCompletion?(data)
                     return
                 }
                 onCompletion?(data)
@@ -88,6 +93,7 @@ public final class Sabil {
             task.resume()
         } catch {
             print("[Sabil SDK]: \(error)")
+            onCompletion?(nil)
             return
         }
     }
@@ -125,14 +131,14 @@ public final class Sabil {
                 return
             }
 
-
-            self.rootVC.view.backgroundColor = .clear
             self.window.rootViewController = self.rootVC
             DispatchQueue.main.async {
+                self.rootVC.view.backgroundColor = .clear
                 self.window.makeKeyAndVisible()
-                let dialogViewContoller = UIHostingController(rootView: DialogView())
+                let dialogViewContoller = UIHostingController(rootView: DialogView(viewModel: self.viewModel))
+                dialogViewContoller.isModalInPresentation = true
                 self.rootVC.present(dialogViewContoller, animated: true)
-
+                self.getUserAttachedDevices()
             }
         }
     }
@@ -162,9 +168,19 @@ public final class Sabil {
     /**
      * Returns the devices currently attached to the user.
      */
-    public func getUserAttachedDevices() -> [SabilDeviceUsage] {
-        //TODO: run method in background, handle fails gracefully
-        return []
+    public func getUserAttachedDevices() {
+        guard let userID = userID else {
+            print("[Sabil SDK]: userID must not be nil.")
+            return
+        }
+        self.viewModel.loadingDevices = true
+        httpRequest(method: "GET", url: "\(baseURL)/usage/\(userID)/attached_devices") { data in
+            self.viewModel.loadingDevices = false
+            guard let data = data else { return }
+            let decoder = JSONDecoder()
+            guard let devices = try? decoder.decode([SabilDeviceUsage].self, from: data) else { return }
+            self.viewModel.attachedDevices = devices
+        }
     }
 }
 
