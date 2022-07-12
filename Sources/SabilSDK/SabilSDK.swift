@@ -182,10 +182,15 @@ public final class Sabil {
 
             guard let data = data else { return }
             let decoder = JSONDecoder()
-            guard let devices = try? decoder.decode([SabilDeviceUsage].self, from: data) else { return }
-            DispatchQueue.main.async {
-                self.viewModel.attachedDevices = devices
+            do {
+                let devices = try decoder.decode([SabilDeviceUsage].self, from: data)
+                DispatchQueue.main.async {
+                    self.viewModel.attachedDevices = devices
+                }
+            } catch {
+                print("[Sabil SDK]: \(error)")
             }
+
 
         }
     }
