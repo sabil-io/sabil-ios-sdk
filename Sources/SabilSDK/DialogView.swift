@@ -12,7 +12,11 @@ struct DialogView: View {
     var body: some View {
         VStack {
             if viewModel.loadingDevices {
-                ProgressView()
+                if #available(iOS 14.0, *) {
+                    ProgressView()
+                } else {
+                    Text("...")
+                }
             } else {
                 List(viewModel.attachedDevices) {
                     Text($0.deviceInfo.os?.name ?? "Unknown")
