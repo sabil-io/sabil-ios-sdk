@@ -131,8 +131,9 @@ public final class Sabil {
                 return
             }
 
-            self.window.rootViewController = self.rootVC
+
             DispatchQueue.main.async {
+                self.window.rootViewController = self.rootVC
                 self.rootVC.view.backgroundColor = .clear
                 self.window.makeKeyAndVisible()
                 let dialogViewContoller = UIHostingController(rootView: DialogView(viewModel: self.viewModel))
