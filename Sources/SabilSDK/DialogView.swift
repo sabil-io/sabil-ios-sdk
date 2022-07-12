@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct DialogView: View {
-    @State var viewModel: DialogViewModel
+    @ObservedObject var viewModel: DialogViewModel
     var body: some View {
         VStack {
             if viewModel.loadingDevices {
