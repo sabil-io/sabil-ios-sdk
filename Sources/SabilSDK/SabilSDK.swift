@@ -122,10 +122,11 @@ public final class Sabil {
             guard self.appearanceConfig.showBlockingDialog else {
                 return
             }
-            
-            //TODO: Show diaolog here
-            let dialogViewContoller = UIHostingController(rootView: DialogView())
-            topmostViewController()?.present(dialogViewContoller, animated: true)
+
+            DispatchQueue.main.async {
+                let dialogViewContoller = UIHostingController(rootView: DialogView())
+                topmostViewController()?.present(dialogViewContoller, animated: true)
+            }
         }
     }
 
