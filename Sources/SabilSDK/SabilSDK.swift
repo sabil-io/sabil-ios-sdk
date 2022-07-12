@@ -182,6 +182,7 @@ public final class Sabil {
 
             guard let data = data else { return }
             let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
             do {
                 let devices = try decoder.decode([SabilDeviceUsage].self, from: data)
                 DispatchQueue.main.async {
