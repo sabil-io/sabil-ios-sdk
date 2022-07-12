@@ -48,7 +48,7 @@ public struct SabilDeviceUsage: Codable, Identifiable {
     public let deviceID: String
     public let deviceInfo: SabilDeviceInfo
     public let user: String
-    public let detachedAt: Date
+    public let detachedAt: Date?
     public let createdAt: Date
     public let updatedAt: Date
     
