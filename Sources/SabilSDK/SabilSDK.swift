@@ -175,11 +175,17 @@ public final class Sabil {
         }
         self.viewModel.loadingDevices = true
         httpRequest(method: "GET", url: "\(baseURL)/usage/\(userID)/attached_devices") { data in
-            self.viewModel.loadingDevices = false
+            DispatchQueue.main.async {
+                self.viewModel.loadingDevices = false
+            }
+
             guard let data = data else { return }
             let decoder = JSONDecoder()
             guard let devices = try? decoder.decode([SabilDeviceUsage].self, from: data) else { return }
-            self.viewModel.attachedDevices = devices
+            DispatchQueue.main.async {
+                self.viewModel.attachedDevices = devices
+            }
+
         }
     }
 }
