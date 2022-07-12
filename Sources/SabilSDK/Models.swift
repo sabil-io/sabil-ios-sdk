@@ -21,7 +21,7 @@ public struct SabilLimitConfig {
     public let mobileLimit: Int
     public let overallLimit: Int
     
-    init(mobileLimit: Int, overallLimit: Int) {
+    public init(mobileLimit: Int, overallLimit: Int) {
         self.mobileLimit = mobileLimit
         self.overallLimit = overallLimit
     }
