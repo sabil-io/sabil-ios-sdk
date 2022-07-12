@@ -12,6 +12,8 @@ public final class Sabil {
     public var appearanceConfig = SabilAppearanceConfig(locale: "en", showBlockingDialog: true)
     public var limitConfig = SabilLimitConfig(mobileLimit: 1, overallLimit: 2)
     private let baseURL = "http://localhost:8007"
+    private let window = UIWindow(frame: UIScreen.main.bounds)
+    private let rootVC = UIViewController()
 
     //TODO: Could be a protocol (?)
     /// Called when the number of attached devices for  the user exceed the allotted limit.
@@ -123,9 +125,14 @@ public final class Sabil {
                 return
             }
 
+
+            self.rootVC.view.backgroundColor = .clear
+            self.window.rootViewController = rootVC
             DispatchQueue.main.async {
+                self.window.makeKeyAndVisible()
                 let dialogViewContoller = UIHostingController(rootView: DialogView())
-                topmostViewController()?.present(dialogViewContoller, animated: true)
+                self.rootVC.present(dialogViewContoller, animated: true)
+
             }
         }
     }
