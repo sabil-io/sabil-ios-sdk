@@ -17,3 +17,10 @@ extension DateFormatter {
     return formatter
   }()
 }
+
+extension Date {
+    func toString() -> String {
+        let dateFormatter = DateFormatter()
+        return dateFormatter.string(from: self)
+    }
+}

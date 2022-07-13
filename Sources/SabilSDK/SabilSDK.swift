@@ -13,9 +13,11 @@ public final class Sabil {
     private let baseURL = "http://localhost:8007"
     private let window = UIWindow(frame: UIScreen.main.bounds)
     private let rootVC = UIViewController()
-    private let viewModel = DialogViewModel()
+    private let viewModel = DialogViewModel(currentDeviceID: "",
+                                            attachedDevices: [],
+                                            limitConfig: SabilLimitConfig(mobileLimit: 1, overallLimit: 2),
+                                            loadingDevices: false)
 
-    //TODO: Could be a protocol (?)
     /// Called when the number of attached devices for  the user exceed the allotted limit.
     public var onLimitExceeded: ((Int) -> Void)?
 
@@ -26,7 +28,7 @@ public final class Sabil {
      * The user can then continue using the app until the next attach.
      * It is **strongly recommended** that you log the user out when this function fires.
      */
-    public var onLogoutCurrentDevice: (() -> Void)?
+    public var onLogoutCurrentDevice: ((SabilDeviceUsage) -> Void)?
 
     /**
      * Called when the user chooses to log out a remote device (as apposed to this device).
@@ -35,16 +37,17 @@ public final class Sabil {
      * The user can then continue using the app until the next attach.
      * It is **strongly recommended** that you log the user out when this function fires.
      */
-    public var onLogoutOtherDevice: (() -> Void)?
+    public var onLogoutOtherDevice: ((SabilDeviceUsage) -> Void)?
 
     public func config(clientID: String, secret: String? = nil, appearanceConfig: SabilAppearanceConfig? = nil, limitConfig: SabilLimitConfig? = nil) {
+        viewModel.currentDeviceID = getDeviceID()
         self.clientID = clientID
         self.secret = secret
         if let appearanceConfig = appearanceConfig {
             self.appearanceConfig = appearanceConfig
         }
         if let limitConfig = limitConfig {
-            self.limitConfig = limitConfig
+            self.viewModel.limitConfig = limitConfig
         }
     }
 
@@ -98,6 +101,26 @@ public final class Sabil {
         }
     }
 
+    fileprivate func showBlockingDialog() {
+        self.window.rootViewController = self.rootVC
+        self.rootVC.view.backgroundColor = .clear
+        self.window.makeKeyAndVisible()
+        let dialogView = DialogView(viewModel: self.viewModel) { usageSet in
+            for usage in usageSet {
+                self.detach(usage: usage)
+            }
+        }
+        let dialogViewContoller = UIHostingController(rootView: dialogView)
+        dialogViewContoller.isModalInPresentation = true
+        self.rootVC.present(dialogViewContoller, animated: true)
+        self.getUserAttachedDevices()
+    }
+
+    fileprivate func hideBlockingDialog() {
+        self.rootVC.dismiss(animated: true)
+        self.window.resignKey()
+    }
+
     /**
      * Adds the device to the user's attached device list.
      *
@@ -120,7 +143,6 @@ public final class Sabil {
             guard let data = data else { return }
             let decoder = JSONDecoder()
             guard let attachResponse = try? decoder.decode(SabilAttachResponse.self, from: data) else { return }
-            // TODO: handle mobile specific limits
             guard attachResponse.attachedDevices > self.limitConfig.overallLimit else {
                 return
             }
@@ -131,30 +153,23 @@ public final class Sabil {
                 return
             }
 
-
             DispatchQueue.main.async {
-                self.window.rootViewController = self.rootVC
-                self.rootVC.view.backgroundColor = .clear
-                self.window.makeKeyAndVisible()
-                let dialogViewContoller = UIHostingController(rootView: DialogView(viewModel: self.viewModel))
-                dialogViewContoller.isModalInPresentation = true
-                self.rootVC.present(dialogViewContoller, animated: true)
-                self.getUserAttachedDevices()
+                self.showBlockingDialog()
             }
         }
     }
 
     fileprivate func getDeviceInfo() -> [String: Any] {
-        var type = "mobile"
-        if UIDevice.current.model.contains("iPad") {
-            type = "tablet"
-        }
         return [
             "os": ["name": UIDevice.current.systemName, "version": UIDevice.current.systemVersion],
             "device": [
                 "vendor": "Apple",
                 "model": UIDevice.current.model,
-                "type": type]]
+                "type": deviceType().rawValue]]
+    }
+
+    fileprivate func deviceType() -> SabilDeviceType {
+        return UIDevice.current.model.contains("iPad") ? .tablet : .mobile
     }
 
     /**
@@ -162,8 +177,43 @@ public final class Sabil {
      *
      * Call this function only when the device is no longer attached to the user. A common place to call this function is the logout sequence. You should not call this function anywhere else unless you are an advancer user and you know what you're doing.
      */
-    public func detach() {
-        //TODO: run method in background, handle fails gracefully
+    public func detach(usage: SabilDeviceUsage) {
+        detach(deviceID: usage.deviceID) { response in
+            guard response?.success == true else {
+                return
+            }
+            DispatchQueue.main.async {
+                self.viewModel.attachedDevices.removeAll(where: {$0.id == usage.id})
+
+                if usage.deviceID == self.getDeviceID() {
+                    self.onLogoutCurrentDevice?(usage)
+                } else {
+                    self.onLogoutOtherDevice?(usage)
+                }
+            }
+        }
+    }
+
+    public func detach(deviceID device: String, completion: ((SabilAttachResponse?) -> Void)? = nil) {
+        guard let userID = userID else {
+            print("[Sabil SDK]: userID must not be nil.")
+            completion?(nil)
+            return
+        }
+        let body = [
+            "device_id": device,
+            "user": userID
+        ]
+        httpRequest(method: "POST", url: "\(baseURL)/usage/detach", body: body) { data in
+            guard let data = data else { return }
+            let decoder = JSONDecoder()
+            do {
+                completion?(try decoder.decode(SabilAttachResponse.self, from: data))
+            } catch {
+                print("[Sabil SDK]: \(error)")
+                completion?(nil)
+            }
+        }
     }
 
     /**
@@ -191,8 +241,6 @@ public final class Sabil {
             } catch {
                 print("[Sabil SDK]: \(error)")
             }
-
-
         }
     }
 }

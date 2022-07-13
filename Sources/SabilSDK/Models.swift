@@ -43,7 +43,7 @@ public struct SabilDeviceInfo: Codable {
     public let device: SabilDevice?
 }
 
-public struct SabilDeviceUsage: Codable, Identifiable {
+public struct SabilDeviceUsage: Codable, Identifiable, Hashable {
     public let id: String
     public let deviceID: String
     public let deviceInfo: SabilDeviceInfo
@@ -59,6 +59,14 @@ public struct SabilDeviceUsage: Codable, Identifiable {
         case user, createdAt, updatedAt
         case detachedAt = "detacched_at"
     }
+
+    public static func == (lhs: SabilDeviceUsage, rhs: SabilDeviceUsage) -> Bool {
+        return lhs.id == rhs.id
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
 }
 
 public struct SabilAttachResponse: Decodable {
@@ -69,4 +77,10 @@ public struct SabilAttachResponse: Decodable {
         case attachedDevices = "attached_devices"
         case success
     }
+}
+
+public enum SabilDeviceType: String {
+    case mobile
+    case tablet
+    case computer
 }
