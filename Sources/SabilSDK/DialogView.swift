@@ -96,8 +96,8 @@ struct DialogView: View {
                 Text("Log out the selected devices")
             }
             .padding()
-            .background(selected.isEmpty ? Color(.sRGB, red: 0.9, green: 0.9, blue: 0.9, opacity: 0.4) : Color.black)
-            .foregroundColor(selected.isEmpty ? .black : .white)
+            .background(selected.isEmpty ? Color(.systemGray) : Color.black)
+            .foregroundColor(.white)
             .cornerRadius(8)
             .disabled(selected.isEmpty)
         }

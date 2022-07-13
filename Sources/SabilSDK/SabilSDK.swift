@@ -9,7 +9,6 @@ public final class Sabil {
     public var secret: String?
     public var userID: String?
     public var appearanceConfig = SabilAppearanceConfig(locale: "en", showBlockingDialog: true)
-    public var limitConfig = SabilLimitConfig(mobileLimit: 1, overallLimit: 2)
     private let baseURL = "http://localhost:8007"
     private let window = UIWindow(frame: UIScreen.main.bounds)
     private let rootVC = UIViewController()
@@ -143,7 +142,7 @@ public final class Sabil {
             guard let data = data else { return }
             let decoder = JSONDecoder()
             guard let attachResponse = try? decoder.decode(SabilAttachResponse.self, from: data) else { return }
-            guard attachResponse.attachedDevices > self.limitConfig.overallLimit else {
+            guard attachResponse.attachedDevices > self.viewModel.overallLimit else {
                 return
             }
             DispatchQueue.main.async {
