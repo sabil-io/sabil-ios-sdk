@@ -190,7 +190,7 @@ public final class Sabil {
                 } else {
                     self.onLogoutOtherDevice?(usage)
                 }
-                if self.viewModel.attachedDevices.count < self.viewModel.limitConfig.overallLimit {
+                if self.viewModel.attachedDevices.count <= self.viewModel.limitConfig.overallLimit {
                     self.hideBlockingDialog()
                 }
             }
