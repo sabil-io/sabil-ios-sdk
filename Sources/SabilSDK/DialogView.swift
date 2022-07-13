@@ -32,11 +32,11 @@ struct DialogView: View {
                         Image(systemName: selected.contains(usage) ? "checkmark.circle.fill" : "circle")
                             .font(Font.system(size: 24))
                             .foregroundColor(selected.contains(usage) ? Color(.systemBlue) : Color.primary)
-                        if usage.deviceInfo.device?.type == "Mobile" {
+                        if usage.deviceInfo.device?.type == SabilDeviceType.mobile.rawValue {
                             Image(systemName: "iphone")
                                 .font(.title)
                                 .frame(width: 50, height: 50)
-                        } else if usage.deviceInfo.device?.type == "Tablet" {
+                        } else if usage.deviceInfo.device?.type == SabilDeviceType.tablet.rawValue {
                             Image(systemName: "ipad.landscape")
                                 .font(.title)
                                 .frame(width: 50, height: 50)
