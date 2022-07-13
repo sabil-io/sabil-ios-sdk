@@ -10,7 +10,7 @@ public final class Sabil {
     public var userID: String?
     public var appearanceConfig = SabilAppearanceConfig(locale: "en", showBlockingDialog: true)
     private let baseURL = "http://localhost:8007"
-    private let window = UIWindow(frame: UIScreen.main.bounds)
+    private var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
     private let rootVC = UIViewController()
     private let viewModel = DialogViewModel(currentDeviceID: "",
                                             attachedDevices: [],
@@ -101,9 +101,12 @@ public final class Sabil {
 
     fileprivate func showBlockingDialog() {
         self.viewModel.detachLoading = true
-        self.window.rootViewController = self.rootVC
+        if (self.window == nil) {
+            self.window = UIWindow(frame: UIScreen.main.bounds)
+        }
+        self.window?.rootViewController = self.rootVC
         self.rootVC.view.backgroundColor = .clear
-        self.window.makeKeyAndVisible()
+        self.window?.makeKeyAndVisible()
         let dialogView = DialogView(viewModel: self.viewModel) { usageSet in
             for usage in usageSet {
                 self.detach(usage: usage)
@@ -114,11 +117,6 @@ public final class Sabil {
         self.rootVC.present(dialogViewContoller, animated: true)
         self.getUserAttachedDevices()
         self.viewModel.detachLoading = false
-    }
-
-    fileprivate func hideBlockingDialog() {
-        self.rootVC.dismiss(animated: true)
-        self.window.resignKey()
     }
 
     /**
@@ -217,6 +215,12 @@ public final class Sabil {
                 completion?(nil)
             }
         }
+    }
+
+    fileprivate func hideBlockingDialog() {
+        self.rootVC.dismiss(animated: true)
+        self.window?.resignKey()
+        self.window = nil
     }
 
     /**
