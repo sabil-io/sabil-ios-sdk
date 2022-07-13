@@ -10,13 +10,13 @@ import Foundation
 final class DialogViewModel: ObservableObject {
     @Published var currentDeviceID: String
     @Published var attachedDevices: [SabilDeviceUsage] = []
-    @Published var loadingDevices: Bool = false
     @Published var limitConfig: SabilLimitConfig
+    @Published var loadingDevices: Bool = false
+    @Published var detachLoading: Bool = false
 
-    init(currentDeviceID: String, attachedDevices: [SabilDeviceUsage], limitConfig: SabilLimitConfig, loadingDevices: Bool) {
+    init(currentDeviceID: String, attachedDevices: [SabilDeviceUsage], limitConfig: SabilLimitConfig) {
         self.currentDeviceID = currentDeviceID
         self.attachedDevices = attachedDevices
-        self.loadingDevices = loadingDevices
         self.limitConfig = limitConfig
     }
 }

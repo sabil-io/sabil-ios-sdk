@@ -14,8 +14,7 @@ public final class Sabil {
     private let rootVC = UIViewController()
     private let viewModel = DialogViewModel(currentDeviceID: "",
                                             attachedDevices: [],
-                                            limitConfig: SabilLimitConfig(mobileLimit: 1, overallLimit: 2),
-                                            loadingDevices: false)
+                                            limitConfig: SabilLimitConfig(mobileLimit: 1, overallLimit: 2))
 
     /// Called when the number of attached devices for  the user exceed the allotted limit.
     public var onLimitExceeded: ((Int) -> Void)?
@@ -101,6 +100,7 @@ public final class Sabil {
     }
 
     fileprivate func showBlockingDialog() {
+        self.viewModel.detachLoading = true
         self.window.rootViewController = self.rootVC
         self.rootVC.view.backgroundColor = .clear
         self.window.makeKeyAndVisible()
@@ -113,6 +113,7 @@ public final class Sabil {
         dialogViewContoller.isModalInPresentation = true
         self.rootVC.present(dialogViewContoller, animated: true)
         self.getUserAttachedDevices()
+        self.viewModel.detachLoading = false
     }
 
     fileprivate func hideBlockingDialog() {
@@ -188,6 +189,9 @@ public final class Sabil {
                     self.onLogoutCurrentDevice?(usage)
                 } else {
                     self.onLogoutOtherDevice?(usage)
+                }
+                if self.viewModel.attachedDevices.count < self.viewModel.limitConfig.overallLimit {
+                    self.hideBlockingDialog()
                 }
             }
         }

@@ -24,6 +24,7 @@ struct DialogView: View {
                     .font(Font.system(size: 20))
                     .fontWeight(.medium)
                     .padding()
+                    .padding(.top, 15)
                 Text("To proceed, please log out \(viewModel.attachedDevices.count - viewModel.limitConfig.overallLimit) device(s) from the list below.")
                     .padding()
                 List(viewModel.attachedDevices, id: \.self, selection: $selected) { usage in
@@ -87,19 +88,29 @@ struct DialogView: View {
                     .listRowBackground(selected.contains(usage) ? Color(.systemFill) : Color(.systemBackground))
                 }
                 .listStyle(PlainListStyle())
+                .disabled(viewModel.detachLoading)
 
             }
             Spacer()
             Button {
                 onDetach?(selected)
             } label: {
-                Text("Log out the selected devices")
+                if viewModel.detachLoading {
+                    if #available(iOS 14.0, *) {
+                        ProgressView()
+                    } else {
+                        // Fallback on earlier versions
+                        Text("...")
+                    }
+                } else {
+                    Text("Log out the selected devices")
+                }
             }
             .padding()
             .background(selected.isEmpty ? Color(.systemGray) : Color.black)
             .foregroundColor(.white)
             .cornerRadius(8)
-            .disabled(selected.isEmpty)
+            .disabled(selected.isEmpty || viewModel.detachLoading)
         }
     }
 }
@@ -115,8 +126,7 @@ struct DialogView_Previews: PreviewProvider {
                                             SabilDeviceUsage(id: "3", deviceID: "3", deviceInfo: SabilDeviceInfo(os: SabilOS(name: "iOS", version: "1.0"), device: SabilDevice(vendor: "Apple", type: "Mobile", model: "iPhone 13")), user: "xyz", detachedAt: nil, createdAt: Date(), updatedAt: Date()),
                                             SabilDeviceUsage(id: "4", deviceID: "4", deviceInfo: SabilDeviceInfo(os: SabilOS(name: "iOS", version: "1.0"), device: SabilDevice(vendor: "Apple", type: "Mobile", model: "iPhone 13")), user: "xyz", detachedAt: nil, createdAt: Date(), updatedAt: Date())
                                         ],
-                                        limitConfig: SabilLimitConfig(mobileLimit: 1, overallLimit: 1),
-                                        loadingDevices: false)
+                                        limitConfig: SabilLimitConfig(mobileLimit: 1, overallLimit: 1))
 
         DialogView(viewModel: viewModel)
     }
