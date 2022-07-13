@@ -142,7 +142,7 @@ public final class Sabil {
             guard let data = data else { return }
             let decoder = JSONDecoder()
             guard let attachResponse = try? decoder.decode(SabilAttachResponse.self, from: data) else { return }
-            guard attachResponse.attachedDevices > self.viewModel.overallLimit else {
+            guard attachResponse.attachedDevices > self.viewModel.limitConfig.overallLimit else {
                 return
             }
             DispatchQueue.main.async {
