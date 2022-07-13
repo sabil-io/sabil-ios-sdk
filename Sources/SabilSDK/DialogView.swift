@@ -91,7 +91,7 @@ struct DialogView: View {
             }
             Spacer()
             Button {
-                //TODO: log out selected devices
+                onDetach?(selected)
             } label: {
                 Text("Log out the selected devices")
             }
