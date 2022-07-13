@@ -111,6 +111,8 @@ struct DialogView: View {
             .foregroundColor(.white)
             .cornerRadius(8)
             .disabled(selected.isEmpty || viewModel.detachLoading)
+            Spacer()
+                .frame(height: 16)
         }
     }
 }
