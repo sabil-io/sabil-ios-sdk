@@ -96,6 +96,7 @@ struct DialogView: View {
             Spacer()
             Button {
                 onDetach?(selected)
+                selected.removeAll()
             } label: {
                 if viewModel.detachLoading {
                     if #available(iOS 14.0, *) {

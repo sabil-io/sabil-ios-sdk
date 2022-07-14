@@ -183,11 +183,12 @@ public final class Sabil {
             DispatchQueue.main.async {
                 self.viewModel.attachedDevices.removeAll(where: {$0.id == usage.id})
 
-                if usage.deviceID == self.getDeviceID() {
+                guard usage.deviceID != self.getDeviceID() else {
                     self.onLogoutCurrentDevice?(usage)
-                } else {
-                    self.onLogoutOtherDevice?(usage)
+                    self.hideBlockingDialog()
+                    return
                 }
+                self.onLogoutOtherDevice?(usage)
                 if self.viewModel.attachedDevices.count <= self.viewModel.limitConfig.overallLimit {
                     self.hideBlockingDialog()
                 }
