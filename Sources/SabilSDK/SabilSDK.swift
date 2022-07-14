@@ -8,7 +8,7 @@ public final class Sabil {
     public var clientID: String?
     public var secret: String?
     public var userID: String?
-    public var appearanceConfig = SabilAppearanceConfig(locale: "en", showBlockingDialog: true)
+    public var appearanceConfig = SabilAppearanceConfig(showBlockingDialog: true)
     private let baseURL = "http://localhost:8007"
     private var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
     private let rootVC = UIViewController()

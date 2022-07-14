@@ -8,11 +8,9 @@
 import Foundation
 
 public struct SabilAppearanceConfig {
-    public let locale: String
     public let showBlockingDialog: Bool
     
-    public init(locale: String, showBlockingDialog: Bool) {
-        self.locale = locale
+    public init(showBlockingDialog: Bool) {
         self.showBlockingDialog = showBlockingDialog
     }
 }
