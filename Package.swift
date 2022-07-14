@@ -14,6 +14,10 @@ let package = Package(
     targets: [
         .target(
             name: "SabilSDK",
-            dependencies: [])
+            dependencies: [],
+            resources: [
+                .process("Resources")
+            ]
+        )
     ]
 )

@@ -20,12 +20,14 @@ struct DialogView: View {
                     Text("...")
                 }
             } else {
-                Text("Too many devices using your account")
+                Text("limit_exceeded_title", bundle: Bundle.module)
                     .font(Font.system(size: 20))
                     .fontWeight(.medium)
                     .padding()
                     .padding(.top, 15)
-                Text("To proceed, please log out \(viewModel.attachedDevices.count - viewModel.limitConfig.overallLimit) device(s) from the list below.")
+                    .multilineTextAlignment(.center)
+                Text("logout_to_proceed \(viewModel.attachedDevices.count - viewModel.limitConfig.overallLimit)", bundle: Bundle.module)
+                    .multilineTextAlignment(.center)
                     .padding()
                 List(viewModel.attachedDevices, id: \.self, selection: $selected) { usage in
                     HStack {
@@ -47,12 +49,12 @@ struct DialogView: View {
                         }
                         VStack(alignment: .leading, spacing: 4) {
                             if usage.deviceID == viewModel.currentDeviceID {
-                                Text(LocalizedStringKey("Current device"))
+                                Text("current_device", bundle: Bundle.module)
                                     .foregroundColor(.red)
                             } else {
                                 Text(usage.deviceInfo.os?.name ?? "Unknown")
                             }
-                            Text("Attached")
+                            Text("attached", bundle: Bundle.module)
                                 .font(.caption)
                                 .padding(.vertical, 3)
                                 .padding(.horizontal, 8)
@@ -62,7 +64,7 @@ struct DialogView: View {
                         }
                         Spacer()
                         VStack(alignment: .trailing) {
-                            Text("Last update")
+                            Text("last_update", bundle: Bundle.module)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             if #available(iOS 15.0, *) {
@@ -103,11 +105,11 @@ struct DialogView: View {
                         Text("...")
                     }
                 } else {
-                    Text("Log out the selected devices")
+                    Text("logout_selected_devices", bundle: Bundle.module)
                 }
             }
             .padding()
-            .background(selected.isEmpty ? Color(.systemGray) : Color.black)
+            .background(selected.isEmpty ? Color(.systemGray4) : Color(.systemRed))
             .foregroundColor(.white)
             .cornerRadius(8)
             .disabled(selected.isEmpty || viewModel.detachLoading)
