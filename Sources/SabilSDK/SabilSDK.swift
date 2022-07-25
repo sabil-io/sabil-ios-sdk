@@ -8,7 +8,7 @@ public final class Sabil {
     public var clientID: String?
     public var secret: String?
     public var userID: String?
-    public var appearanceConfig = SabilAppearanceConfig(showBlockingDialog: true)
+    public var appearanceConfig: SabilAppearanceConfig?
     private let baseURL = "https://api.sabil.io"
     private var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
     private let rootVC = UIViewController()
@@ -141,13 +141,19 @@ public final class Sabil {
             guard let data = data else { return }
             let decoder = JSONDecoder()
             guard let attachResponse = try? decoder.decode(SabilAttachResponse.self, from: data) else { return }
-            guard attachResponse.attachedDevices > self.viewModel.limitConfig.overallLimit else {
+            guard let limit = self.viewModel.limitConfig?.overallLimit ?? attachResponse.defaultDeviceLimit else {
+                return
+            }
+            DispatchQueue.main.async {
+                self.viewModel.defaultDeviceLimit = limit
+            }
+            guard attachResponse.attachedDevices > limit else {
                 return
             }
             DispatchQueue.main.async {
                 self.onLimitExceeded?(attachResponse.attachedDevices)
             }
-            guard self.appearanceConfig.showBlockingDialog else {
+            guard self.appearanceConfig?.showBlockingDialog ?? attachResponse.blockOverUsage ?? false else {
                 return
             }
 
@@ -182,6 +188,7 @@ public final class Sabil {
             }
             DispatchQueue.main.async {
                 self.viewModel.attachedDevices.removeAll(where: {$0.id == usage.id})
+                self.viewModel.defaultDeviceLimit = response?.defaultDeviceLimit ?? self.viewModel.defaultDeviceLimit
 
                 guard usage.deviceID != self.getDeviceID() else {
                     self.onLogoutCurrentDevice?(usage)
@@ -189,7 +196,7 @@ public final class Sabil {
                     return
                 }
                 self.onLogoutOtherDevice?(usage)
-                if self.viewModel.attachedDevices.count <= self.viewModel.limitConfig.overallLimit {
+                if let limit = self.viewModel.limitConfig?.overallLimit ?? response?.defaultDeviceLimit, self.viewModel.attachedDevices.count <= limit {
                     self.hideBlockingDialog()
                 }
             }

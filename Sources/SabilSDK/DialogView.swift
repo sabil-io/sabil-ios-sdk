@@ -26,7 +26,7 @@ struct DialogView: View {
                     .padding()
                     .padding(.top, 15)
                     .multilineTextAlignment(.center)
-                Text("logout_to_proceed \(viewModel.attachedDevices.count - viewModel.limitConfig.overallLimit)", bundle: Bundle.module)
+                Text("logout_to_proceed \(viewModel.attachedDevices.count - (viewModel.limitConfig?.overallLimit ?? viewModel.defaultDeviceLimit))", bundle: Bundle.module)
                     .multilineTextAlignment(.center)
                     .padding()
                 List(viewModel.attachedDevices, id: \.self, selection: $selected) { usage in

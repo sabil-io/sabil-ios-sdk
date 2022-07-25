@@ -70,10 +70,15 @@ public struct SabilDeviceUsage: Codable, Identifiable, Hashable {
 public struct SabilAttachResponse: Decodable {
     public let attachedDevices: Int
     public let success: Bool
-    
+    public let blockOverUsage: Bool?
+    public let defaultDeviceLimit: Int?
+
     enum CodingKeys: String, CodingKey {
         case attachedDevices = "attached_devices"
+        case blockOverUsage = "block_over_usage"
+        case defaultDeviceLimit = "default_device_limit"
         case success
+
     }
 }
 
