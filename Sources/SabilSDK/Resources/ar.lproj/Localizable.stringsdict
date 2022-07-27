@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logout_to_proceed %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>للمتابعة الرجاء تسجيل الخروج من %#@num_devices@ من الأجهزة الموضحة أدناه</string>
+		<key>num_devices</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>zero</key>
+			<string>صفر أجهزة</string>
+			<key>one</key>
+			<string>أحد الأجهزة</string>
+			<key>two</key>
+			<string>جهازين</string>
+			<key>other</key>
+			<string>%lld أجهزة</string>
+		</dict>
+	</dict>
+</dict>
+</plist>
