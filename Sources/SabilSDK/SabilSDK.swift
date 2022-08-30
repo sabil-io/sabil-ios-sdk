@@ -241,7 +241,7 @@ public final class Sabil {
             return
         }
         self.viewModel.loadingDevices = true
-        httpRequest(method: "GET", url: "\(baseURL)/usage/\(userID)/attached_devices") { data in
+        httpRequest(method: "GET", url: "\(baseURL)/v2/access/user/\(userID)/attached_devices") { data in
             DispatchQueue.main.async {
                 self.viewModel.loadingDevices = false
             }
