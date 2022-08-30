@@ -9,7 +9,8 @@ public final class Sabil {
     public var secret: String?
     public var userID: String?
     public var appearanceConfig: SabilAppearanceConfig?
-    private let baseURL = "https://api.sabil.io"
+//    private let baseURL = "https://api.sabil.io"
+    private let baseURL = "http://localhost:8007"
     private var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
     private let rootVC = UIViewController()
     private let viewModel = DialogViewModel(currentDeviceID: "",
@@ -26,7 +27,7 @@ public final class Sabil {
      * The user can then continue using the app until the next attach.
      * It is **strongly recommended** that you log the user out when this function fires.
      */
-    public var onLogoutCurrentDevice: ((SabilDeviceUsage) -> Void)?
+    public var onLogoutCurrentDevice: ((SabilDevice) -> Void)?
 
     /**
      * Called when the user chooses to log out a remote device (as apposed to this device).
@@ -35,7 +36,7 @@ public final class Sabil {
      * The user can then continue using the app until the next attach.
      * It is **strongly recommended** that you log the user out when this function fires.
      */
-    public var onLogoutOtherDevice: ((SabilDeviceUsage) -> Void)?
+    public var onLogoutOtherDevice: ((SabilDevice) -> Void)?
 
     public func config(clientID: String, secret: String? = nil, appearanceConfig: SabilAppearanceConfig? = nil, limitConfig: SabilLimitConfig? = nil) {
         viewModel.currentDeviceID = getDeviceID()
@@ -109,7 +110,7 @@ public final class Sabil {
         self.window?.makeKeyAndVisible()
         let dialogView = DialogView(viewModel: self.viewModel) { usageSet in
             for usage in usageSet {
-                self.detach(usage: usage)
+                self.detach(device: usage)
             }
         }
         let dialogViewContoller = UIHostingController(rootView: dialogView)
@@ -135,8 +136,8 @@ public final class Sabil {
             return
         }
         let deviceInfo = getDeviceInfo()
-        let body: [String : Any] = ["device_id": getDeviceID(), "user": userID, "device_info": deviceInfo]
-        httpRequest(method: "POST", url: "\(baseURL)/usage/attach", body: body) { data in
+        let body: [String : Any] = ["iosVendorIdentifier": getDeviceID(), "user": userID, "device_info": deviceInfo]
+        httpRequest(method: "POST", url: "\(baseURL)/v2/access", body: body) { data in
 
             guard let data = data else { return }
             let decoder = JSONDecoder()
@@ -181,21 +182,21 @@ public final class Sabil {
      *
      * Call this function only when the device is no longer attached to the user. A common place to call this function is the logout sequence. You should not call this function anywhere else unless you are an advancer user and you know what you're doing.
      */
-    public func detach(usage: SabilDeviceUsage) {
-        detach(deviceID: usage.deviceID) { response in
+    public func detach(device: SabilDevice) {
+        detach(deviceID: device.id) { response in
             guard response?.success == true else {
                 return
             }
             DispatchQueue.main.async {
-                self.viewModel.attachedDevices.removeAll(where: {$0.id == usage.id})
+                self.viewModel.attachedDevices.removeAll(where: {$0.id == device.id})
                 self.viewModel.defaultDeviceLimit = response?.defaultDeviceLimit ?? self.viewModel.defaultDeviceLimit
 
-                guard usage.deviceID != self.getDeviceID() else {
-                    self.onLogoutCurrentDevice?(usage)
+                guard device.id != self.getDeviceID() else {
+                    self.onLogoutCurrentDevice?(device)
                     self.hideBlockingDialog()
                     return
                 }
-                self.onLogoutOtherDevice?(usage)
+                self.onLogoutOtherDevice?(device)
                 if let limit = self.viewModel.limitConfig?.overallLimit ?? response?.defaultDeviceLimit, self.viewModel.attachedDevices.count <= limit {
                     self.hideBlockingDialog()
                 }
@@ -210,10 +211,10 @@ public final class Sabil {
             return
         }
         let body = [
-            "device_id": device,
+            "device": device,
             "user": userID
         ]
-        httpRequest(method: "POST", url: "\(baseURL)/usage/detach", body: body) { data in
+        httpRequest(method: "POST", url: "\(baseURL)/v2/access/detach", body: body) { data in
             guard let data = data else { return }
             let decoder = JSONDecoder()
             do {
@@ -249,7 +250,7 @@ public final class Sabil {
             let decoder = JSONDecoder()
             decoder.dateDecodingStrategy = .formatted(.iso8601Full)
             do {
-                let devices = try decoder.decode([SabilDeviceUsage].self, from: data)
+                let devices = try decoder.decode([SabilDevice].self, from: data)
                 DispatchQueue.main.async {
                     self.viewModel.attachedDevices = devices
                 }
