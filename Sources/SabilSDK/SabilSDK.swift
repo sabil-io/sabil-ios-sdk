@@ -136,7 +136,7 @@ public final class Sabil {
             return
         }
         let deviceInfo = getDeviceInfo()
-        let body: [String : Any] = ["iosVendorIdentifier": getDeviceID(), "user": userID, "device_info": deviceInfo, "signals": []]
+        let body: [String : Any] = ["iosVendorIdentifier": getDeviceID(), "user": userID, "device_info": deviceInfo]
         httpRequest(method: "POST", url: "\(baseURL)/v2/access", body: body) { data in
 
             guard let data = data else { return }
