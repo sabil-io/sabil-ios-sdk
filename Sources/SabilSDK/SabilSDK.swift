@@ -9,8 +9,7 @@ public final class Sabil {
     public var secret: String?
     public var userID: String?
     public var appearanceConfig: SabilAppearanceConfig?
-//    private let baseURL = "https://api.sabil.io"
-    private let baseURL = "http://localhost:8007"
+    private let baseURL = "https://api.sabil.io"
     private var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
     private let rootVC = UIViewController()
     private let viewModel = DialogViewModel(currentDeviceID: "",
