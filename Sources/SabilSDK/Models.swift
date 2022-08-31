@@ -30,7 +30,7 @@ public struct SabilOS: Codable {
     public let version: String?
 }
 
-public struct SabilDevice: Codable {
+public struct SabilDeviceDetails: Codable {
     public let vendor: String?
     public let type: String?
     public let model: String?
@@ -38,27 +38,22 @@ public struct SabilDevice: Codable {
 
 public struct SabilDeviceInfo: Codable {
     public let os: SabilOS?
-    public let device: SabilDevice?
+    public let device: SabilDeviceDetails?
 }
 
-public struct SabilDeviceUsage: Codable, Identifiable, Hashable {
+public struct SabilDevice: Codable, Identifiable, Hashable {
     public let id: String
-    public let deviceID: String
-    public let deviceInfo: SabilDeviceInfo
+    public let info: SabilDeviceInfo
     public let user: String
-    public let detachedAt: Date?
     public let createdAt: Date
     public let updatedAt: Date
     
     enum CodingKeys: String, CodingKey {
         case id = "_id"
-        case deviceID = "device_id"
-        case deviceInfo = "device_info"
-        case user, createdAt, updatedAt
-        case detachedAt = "detacched_at"
+        case info, user, createdAt, updatedAt
     }
 
-    public static func == (lhs: SabilDeviceUsage, rhs: SabilDeviceUsage) -> Bool {
+    public static func == (lhs: SabilDevice, rhs: SabilDevice) -> Bool {
         return lhs.id == rhs.id
     }
 
@@ -68,12 +63,14 @@ public struct SabilDeviceUsage: Codable, Identifiable, Hashable {
 }
 
 public struct SabilAttachResponse: Decodable {
+    public let deviceID: String
     public let attachedDevices: Int
     public let success: Bool
     public let blockOverUsage: Bool?
     public let defaultDeviceLimit: Int?
 
     enum CodingKeys: String, CodingKey {
+        case deviceID = "device_id"
         case attachedDevices = "attached_devices"
         case blockOverUsage = "block_over_usage"
         case defaultDeviceLimit = "default_device_limit"

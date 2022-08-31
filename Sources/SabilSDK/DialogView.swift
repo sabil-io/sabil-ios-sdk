@@ -9,8 +9,8 @@ import SwiftUI
 
 struct DialogView: View {
     @ObservedObject var viewModel: DialogViewModel
-    @State private var selected = Set<SabilDeviceUsage>()
-    var onDetach: ((Set<SabilDeviceUsage>) -> Void)? = nil
+    @State private var selected = Set<SabilDevice>()
+    var onDetach: ((Set<SabilDevice>) -> Void)? = nil
     var body: some View {
         VStack {
             if viewModel.loadingDevices {
@@ -29,16 +29,16 @@ struct DialogView: View {
                 Text("logout_to_proceed \(viewModel.attachedDevices.count - (viewModel.limitConfig?.overallLimit ?? viewModel.defaultDeviceLimit))", bundle: Bundle.module)
                     .multilineTextAlignment(.center)
                     .padding()
-                List(viewModel.attachedDevices, id: \.self, selection: $selected) { usage in
+                List(viewModel.attachedDevices, id: \.self, selection: $selected) { device in
                     HStack {
-                        Image(systemName: selected.contains(usage) ? "checkmark.circle.fill" : "circle")
+                        Image(systemName: selected.contains(device) ? "checkmark.circle.fill" : "circle")
                             .font(Font.system(size: 24))
-                            .foregroundColor(selected.contains(usage) ? Color(.systemBlue) : Color.primary)
-                        if usage.deviceInfo.device?.type == SabilDeviceType.mobile.rawValue {
+                            .foregroundColor(selected.contains(device) ? Color(.systemBlue) : Color.primary)
+                        if device.info.device?.type == SabilDeviceType.mobile.rawValue {
                             Image(systemName: "iphone")
                                 .font(.title)
                                 .frame(width: 50, height: 50)
-                        } else if usage.deviceInfo.device?.type == SabilDeviceType.tablet.rawValue {
+                        } else if device.info.device?.type == SabilDeviceType.tablet.rawValue {
                             Image(systemName: "ipad.landscape")
                                 .font(.title)
                                 .frame(width: 50, height: 50)
@@ -48,11 +48,11 @@ struct DialogView: View {
                                 .frame(width: 50, height: 50)
                         }
                         VStack(alignment: .leading, spacing: 4) {
-                            if usage.deviceID == viewModel.currentDeviceID {
+                            if device.id == viewModel.currentDeviceID {
                                 Text("current_device", bundle: Bundle.module)
                                     .foregroundColor(.red)
                             } else {
-                                Text(usage.deviceInfo.os?.name ?? "Unknown")
+                                Text(device.info.os?.name ?? "Unknown")
                             }
                             Text("attached", bundle: Bundle.module)
                                 .font(.caption)
@@ -68,11 +68,11 @@ struct DialogView: View {
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                             if #available(iOS 15.0, *) {
-                                Text(usage.updatedAt.formatted())
+                                Text(device.updatedAt.formatted())
                                     .font(.footnote)
                                     .padding(.top, 6)
                             } else {
-                                Text(usage.updatedAt.toString())
+                                Text(device.updatedAt.toString())
                                     .font(Font.system(size: 12))
                                     .padding(.top, 6)
                             }
@@ -81,13 +81,13 @@ struct DialogView: View {
                     .padding(.vertical, 2)
                     .contentShape(Rectangle())
                     .onTapGesture {
-                        if selected.contains(usage) {
-                            selected.remove(usage)
+                        if selected.contains(device) {
+                            selected.remove(device)
                         } else {
-                            selected.insert(usage)
+                            selected.insert(device)
                         }
                     }
-                    .listRowBackground(selected.contains(usage) ? Color(.systemFill) : Color(.systemBackground))
+                    .listRowBackground(selected.contains(device) ? Color(.systemFill) : Color(.systemBackground))
                 }
                 .listStyle(PlainListStyle())
                 .disabled(viewModel.detachLoading)
@@ -125,11 +125,11 @@ struct DialogView_Previews: PreviewProvider {
     static var previews: some View {
         let viewModel = DialogViewModel(currentDeviceID: "1",
                                         attachedDevices: [
-                                            SabilDeviceUsage(id: "0", deviceID: "0", deviceInfo: SabilDeviceInfo(os: SabilOS(name: "Mac OS", version: "1.0"), device: SabilDevice(vendor: "Apple", type: nil, model: nil)), user: "xyz", detachedAt: nil, createdAt: Date(), updatedAt: Date()),
-                                            SabilDeviceUsage(id: "1", deviceID: "1", deviceInfo: SabilDeviceInfo(os: SabilOS(name: "iOS", version: "1.0"), device: SabilDevice(vendor: "Apple", type: "mobile", model: "iPhone 13")), user: "xyz", detachedAt: nil, createdAt: Date(), updatedAt: Date()),
-                                            SabilDeviceUsage(id: "2", deviceID: "2", deviceInfo: SabilDeviceInfo(os: SabilOS(name: "iOS", version: "1.0"), device: SabilDevice(vendor: "Apple", type: "tablet", model: "iPad 5")), user: "xyz", detachedAt: nil, createdAt: Date(), updatedAt: Date()),
-                                            SabilDeviceUsage(id: "3", deviceID: "3", deviceInfo: SabilDeviceInfo(os: SabilOS(name: "iOS", version: "1.0"), device: SabilDevice(vendor: "Apple", type: "mobile", model: "iPhone 13")), user: "xyz", detachedAt: nil, createdAt: Date(), updatedAt: Date()),
-                                            SabilDeviceUsage(id: "4", deviceID: "4", deviceInfo: SabilDeviceInfo(os: SabilOS(name: "Windows", version: "1.0"), device: SabilDevice(vendor: "Apple", type: "", model: "iPhone 13")), user: "xyz", detachedAt: nil, createdAt: Date(), updatedAt: Date())
+                                            SabilDevice(id: "0", info: SabilDeviceInfo(os: SabilOS(name: "Mac OS", version: "1.0"), device: SabilDeviceDetails(vendor: "Apple", type: nil, model: nil)), user: "xyz", createdAt: Date(), updatedAt: Date()),
+                                            SabilDevice(id: "1", info: SabilDeviceInfo(os: SabilOS(name: "iOS", version: "1.0"), device: SabilDeviceDetails(vendor: "Apple", type: "mobile", model: "iPhone 13")), user: "xyz", createdAt: Date(), updatedAt: Date()),
+                                            SabilDevice(id: "2", info: SabilDeviceInfo(os: SabilOS(name: "iOS", version: "1.0"), device: SabilDeviceDetails(vendor: "Apple", type: "tablet", model: "iPad 5")), user: "xyz", createdAt: Date(), updatedAt: Date()),
+                                            SabilDevice(id: "3", info: SabilDeviceInfo(os: SabilOS(name: "iOS", version: "1.0"), device: SabilDeviceDetails(vendor: "Apple", type: "mobile", model: "iPhone 13")), user: "xyz", createdAt: Date(), updatedAt: Date()),
+                                            SabilDevice(id: "4", info: SabilDeviceInfo(os: SabilOS(name: "Windows", version: "1.0"), device: SabilDeviceDetails(vendor: "Apple", type: "", model: "iPhone 13")), user: "xyz", createdAt: Date(), updatedAt: Date())
                                         ],
                                         limitConfig: SabilLimitConfig(mobileLimit: 1, overallLimit: 1))
 
