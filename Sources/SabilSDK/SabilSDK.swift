@@ -39,7 +39,6 @@ public final class Sabil {
     public var onLogoutOtherDevice: ((SabilDevice) -> Void)?
 
     public func config(clientID: String, secret: String? = nil, appearanceConfig: SabilAppearanceConfig? = nil, limitConfig: SabilLimitConfig? = nil) {
-        viewModel.currentDeviceID = getDeviceID()
         self.clientID = clientID
         self.secret = secret
         if let appearanceConfig = appearanceConfig {
@@ -142,6 +141,7 @@ public final class Sabil {
             guard let data = data else { return }
             let decoder = JSONDecoder()
             guard let attachResponse = try? decoder.decode(SabilAttachResponse.self, from: data) else { return }
+            self.viewModel.currentDeviceID = attachResponse.deviceID
             guard let limit = self.viewModel.limitConfig?.overallLimit ?? attachResponse.defaultDeviceLimit else {
                 return
             }
