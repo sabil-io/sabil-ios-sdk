@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>logout_to_proceed %lld</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>İlerlemek için lütfen aşağıdaki listede bulunan %#@num_devices@ cihazda oturumu kapatın.</string>
+		<key>num_devices</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>zero</key>
+			<string>0 cihazda</string>
+			<key>one</key>
+			<string>1 cihazda</string>
+			<key>other</key>
+			<string>%lld cihazda</string>
+		</dict>
+	</dict>
+</dict>
+</plist>
