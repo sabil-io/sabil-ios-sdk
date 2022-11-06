@@ -203,12 +203,10 @@ public final class Sabil {
                 self.viewModel.attachedDevices.removeAll(where: {$0.id == device.id})
                 self.viewModel.defaultDeviceLimit = response?.defaultDeviceLimit ?? self.viewModel.defaultDeviceLimit
 
-                guard device.id != self.getDeviceIDForVendor() else {
-                    self.onLogoutCurrentDevice?(device)
-                    self.hideBlockingDialog()
-                    return
+                if device.id != self.deviceID {
+                    self.onLogoutOtherDevice?(device)
                 }
-                self.onLogoutOtherDevice?(device)
+
                 if let limit = self.viewModel.limitConfig?.overallLimit ?? response?.defaultDeviceLimit, self.viewModel.attachedDevices.count <= limit {
                     self.hideBlockingDialog()
                 }
@@ -293,8 +291,12 @@ extension Sabil: EventHandler {
     }
 
     public func onMessage(eventType: String, messageEvent: LDSwiftEventSource.MessageEvent) {
-        if messageEvent.data == "logout" {
-            onLogoutCurrentDevice?(viewModel.attachedDevices.first(where: {$0.id == deviceID}))
+        if messageEvent.data == "\"logout\"" {
+            DispatchQueue.main.async {
+                self.onLogoutCurrentDevice?(self.viewModel.attachedDevices.first(where: {$0.id == self.deviceID}))
+                self.hideBlockingDialog()
+            }
+
         }
     }
 
