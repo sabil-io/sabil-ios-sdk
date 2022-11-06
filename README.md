@@ -1,6 +1,6 @@
 # SabilSDK
 
-This is the iOS Swift package for [Sabil](https://sabil.io).
+This is the official iOS Swift package for [Sabil](https://sabil.io).
 
 To get started, you need to create a project on Sabil first, and create your API keys.
 

@@ -1,10 +1,12 @@
 import Foundation
 import UIKit
 import SwiftUI
+import LDSwiftEventSource
 
 public final class Sabil {
     public static let shared = Sabil()
 
+    private var eventSource: EventSource?
     public var clientID: String?
     public var secret: String?
     public var userID: String?
@@ -14,7 +16,19 @@ public final class Sabil {
     private let rootVC = UIViewController()
     private let viewModel = DialogViewModel(currentDeviceID: "",
                                             attachedDevices: [],
-                                            limitConfig: SabilLimitConfig(mobileLimit: 1, overallLimit: 2))
+                                            limitConfig: nil)
+    /**
+     * The unique device id generated and tracked by Sabil. It will be null until the first attach call.
+     */
+    public private(set) var deviceID: String? {
+        set {
+            UserDefaults.standard.set(newValue, forKey: "sabil_device_id")
+            self.viewModel.currentDeviceID = newValue ?? ""
+        }
+        get {
+            return UserDefaults.standard.string(forKey: "sabil_device_id")
+        }
+    }
 
     /// Called when the number of attached devices for  the user exceed the allotted limit.
     public var onLimitExceeded: ((Int) -> Void)?
@@ -22,11 +36,15 @@ public final class Sabil {
     /**
      * Called when the user chooses to log out of the current device.
      *
-     * This function will be called immeditely after the user detaches the current device from the list of active devices.
+     * This function will be called immediately after the user detaches the current device from the list of active devices.
      * The user can then continue using the app until the next attach.
      * It is **strongly recommended** that you log the user out when this function fires.
      */
-    public var onLogoutCurrentDevice: ((SabilDevice) -> Void)?
+    public var onLogoutCurrentDevice: ((SabilDevice?) -> Void)? {
+        didSet {
+            listenToRealtimeEvents()
+        }
+    }
 
     /**
      * Called when the user chooses to log out a remote device (as apposed to this device).
@@ -52,12 +70,7 @@ public final class Sabil {
         self.userID = id
     }
 
-    /**
-     * Gets a unique ID for the current device.
-     *
-     * TODO: Add more details on how this works.
-     */
-    public func getDeviceID() -> String {
+    private func getDeviceIDForVendor() -> String {
         //TODO: persist across re-installs
         let vendorID = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
         return vendorID
@@ -106,9 +119,9 @@ public final class Sabil {
         self.window?.rootViewController = self.rootVC
         self.rootVC.view.backgroundColor = .clear
         self.window?.makeKeyAndVisible()
-        let dialogView = DialogView(viewModel: self.viewModel) { usageSet in
-            for usage in usageSet {
-                self.detach(device: usage)
+        let dialogView = DialogView(viewModel: self.viewModel) { devices in
+            for device in devices {
+                self.detach(device: device)
             }
         }
         let dialogViewContoller = UIHostingController(rootView: dialogView)
@@ -134,13 +147,13 @@ public final class Sabil {
             return
         }
         let deviceInfo = getDeviceInfo()
-        let body: [String : Any] = ["user": userID, "device_info": deviceInfo, "signals": ["iosVendorIdentifier": getDeviceID()]]
+        let body: [String : Any] = ["user": userID, "device_info": deviceInfo, "signals": ["iosVendorIdentifier": getDeviceIDForVendor()]]
         httpRequest(method: "POST", url: "\(baseURL)/v2/access", body: body) { data in
 
             guard let data = data else { return }
             let decoder = JSONDecoder()
             guard let attachResponse = try? decoder.decode(SabilAttachResponse.self, from: data) else { return }
-            self.viewModel.currentDeviceID = attachResponse.deviceID
+            self.deviceID = attachResponse.deviceID
             guard let limit = self.viewModel.limitConfig?.overallLimit ?? attachResponse.defaultDeviceLimit else {
                 return
             }
@@ -190,7 +203,7 @@ public final class Sabil {
                 self.viewModel.attachedDevices.removeAll(where: {$0.id == device.id})
                 self.viewModel.defaultDeviceLimit = response?.defaultDeviceLimit ?? self.viewModel.defaultDeviceLimit
 
-                guard device.id != self.getDeviceID() else {
+                guard device.id != self.getDeviceIDForVendor() else {
                     self.onLogoutCurrentDevice?(device)
                     self.hideBlockingDialog()
                     return
@@ -261,3 +274,37 @@ public final class Sabil {
 }
 
 
+extension Sabil: EventHandler {
+
+    func listenToRealtimeEvents() {
+        if let clientID = clientID, let device = deviceID, let url = URL(string: "\(baseURL)/v2/access/device/\(device)/listen?auth=Basic \(clientID):\(secret ?? "")".addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "") {
+            eventSource?.stop()
+            eventSource = EventSource(config: EventSource.Config(handler: self, url: url))
+            eventSource?.start()
+        }
+    }
+
+    public func onOpened() {
+        // left empty on purpose
+    }
+
+    public func onClosed() {
+        // left empty on purpose
+    }
+
+    public func onMessage(eventType: String, messageEvent: LDSwiftEventSource.MessageEvent) {
+        if messageEvent.data == "logout" {
+            onLogoutCurrentDevice?(viewModel.attachedDevices.first(where: {$0.id == deviceID}))
+        }
+    }
+
+    public func onComment(comment: String) {
+        // left empty on purpose
+    }
+
+    public func onError(error: Error) {
+        // left empty on purpose
+    }
+
+
+}
