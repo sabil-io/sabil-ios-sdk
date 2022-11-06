@@ -11,10 +11,13 @@ let package = Package(
             name: "SabilSDK",
             targets: ["SabilSDK"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/LaunchDarkly/swift-eventsource.git", .upToNextMajor(from: "3.0.0")),
+    ],
     targets: [
         .target(
             name: "SabilSDK",
-            dependencies: [],
+            dependencies: [.product(name: "LDSwiftEventSource", package: "swift-eventsource")],
             resources: [
                 .process("Resources")
             ]
