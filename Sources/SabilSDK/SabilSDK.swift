@@ -36,7 +36,6 @@ public final class Sabil {
     public private(set) var identity: String? {
         set {
             UserDefaults.standard.set(newValue, forKey: "sabil_device_identity")
-            self.viewModel.currentDeviceID = newValue ?? ""
         }
         get {
             return UserDefaults.standard.string(forKey: "sabil_device_identity")
@@ -166,7 +165,10 @@ public final class Sabil {
             return
         }
         let deviceInfo = getDeviceInfo()
-        let body: [String : Any] = ["user": userID, "device_info": deviceInfo, "signals": ["iosVendorIdentifier": getDeviceIDForVendor()], "metadata": metadata ?? []]
+        var body: [String : Any] = ["user": userID, "device_info": deviceInfo, "signals": ["iosVendorIdentifier": getDeviceIDForVendor()], "metadata": metadata ?? []]
+        if let identity = self.identity {
+            body["identity"] = identity
+        }
         httpRequest(method: "POST", url: "\(baseURL)/v2/access", body: body) { data in
 
             guard let data = data else { return }
