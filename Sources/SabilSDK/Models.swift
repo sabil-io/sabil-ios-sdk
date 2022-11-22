@@ -7,6 +7,10 @@
 
 import Foundation
 
+public struct SabilError: Error {
+    public let message: String
+}
+
 public struct SabilAppearanceConfig {
     public let showBlockingDialog: Bool
     
@@ -77,6 +81,11 @@ public struct SabilAttachResponse: Decodable {
         case success
 
     }
+}
+
+public struct SabilDeviceIdentity: Decodable {
+    public let identity: String
+    public let confidence: Double
 }
 
 public enum SabilDeviceType: String {

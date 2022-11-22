@@ -30,6 +30,19 @@ public final class Sabil {
         }
     }
 
+    /**
+     * The device identity. Each identity is unique across your application. If two devices have the same identity, that means they are the same physical device.
+     */
+    public private(set) var identity: String? {
+        set {
+            UserDefaults.standard.set(newValue, forKey: "sabil_device_identity")
+            self.viewModel.currentDeviceID = newValue ?? ""
+        }
+        get {
+            return UserDefaults.standard.string(forKey: "sabil_device_identity")
+        }
+    }
+
     /// Called when the number of attached devices for  the user exceed the allotted limit.
     public var onLimitExceeded: ((Int) -> Void)?
 
@@ -66,12 +79,16 @@ public final class Sabil {
         }
     }
 
-    public func setUserID(_ id: String) {
+    /**
+     * Use this to set the user ID.
+     * - Parameters:
+     *  - parameter id: The user ID. Must be a string. If you have the user as anything other than a string, you must use a string representation of it. Send nil to remove the user ID (i.e. on logout).
+     */
+    public func setUserID(_ id: String?) {
         self.userID = id
     }
 
     private func getDeviceIDForVendor() -> String {
-        //TODO: persist across re-installs
         let vendorID = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
         return vendorID
     }
@@ -140,14 +157,16 @@ public final class Sabil {
      * - You should call this function immeditely after you know the userID (i.e. after login, or after app launch).
      * - Multiple calls to this function for the same device will not count as different devices for the user.
      * - You should call this function ideally, in every view. But if that's not feasible, we suggest critical views and app launch and when entering foreground.
+     * - Parameters:
+     *  - parameter metadata: A key-value dictionary with any data that you want saved with all accesses
      */
-    public func attach() {
+    public func attach(metadata: [String: String]? = nil) {
         guard let userID = userID else {
             print("[Sabil SDK]: userID must not be nil.")
             return
         }
         let deviceInfo = getDeviceInfo()
-        let body: [String : Any] = ["user": userID, "device_info": deviceInfo, "signals": ["iosVendorIdentifier": getDeviceIDForVendor()]]
+        let body: [String : Any] = ["user": userID, "device_info": deviceInfo, "signals": ["iosVendorIdentifier": getDeviceIDForVendor()], "metadata": metadata ?? []]
         httpRequest(method: "POST", url: "\(baseURL)/v2/access", body: body) { data in
 
             guard let data = data else { return }
@@ -172,6 +191,30 @@ public final class Sabil {
 
             DispatchQueue.main.async {
                 self.showBlockingDialog()
+            }
+        }
+    }
+
+    public func identify(metadata: [String: String]? = nil, onCompletion: ((SabilDeviceIdentity?, SabilError?) -> Void)? = nil) {
+        let deviceInfo = getDeviceInfo()
+        var body: [String : Any] = ["device_info": deviceInfo, "signals": ["iosVendorIdentifier": getDeviceIDForVendor()], "metadata": metadata ?? []]
+        if let identity = self.identity {
+            body["identity_id"] = identity
+        }
+        httpRequest(method: "POST", url: "\(baseURL)/v2/identity", body: body) { data in
+
+            guard let data = data else {
+                onCompletion?(nil, SabilError(message: "Could not identify device"))
+                return
+            }
+            let decoder = JSONDecoder()
+            guard let identityResponse = try? decoder.decode(SabilDeviceIdentity.self, from: data) else {
+                onCompletion?(nil, SabilError(message: "Unable to decode device response"))
+                return
+            }
+            self.identity = identityResponse.identity
+            DispatchQueue.main.async {
+                onCompletion?(identityResponse, nil)
             }
         }
     }
